@@ -1,0 +1,13 @@
+{
+  "name": "elm-analyse-vim",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "bin": {
+    "elm-analyse-vim": "./index.js"
+  },
+  "dependencies": {
+    "elm-analyse": "^0.16.1",
+    "node-fetch": "^2.3.0"
+  }
+}
