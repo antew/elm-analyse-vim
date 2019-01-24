@@ -36,7 +36,7 @@ let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function uri2path(uri: string): string {
   const parts = url.parse(uri);
@@ -181,13 +181,12 @@ documents.onDidChangeContent(change => {
   validateTextDocument(change.document);
 });
 
-
 async function fetchElmAnalyseState() {
-  return fetch("http://localhost:3002/state")
+  return fetch("http://localhost:3002/report")
     .then(res => res.json())
     .catch(err => {
-        log(`Error fetching elm analyse state ${err}`)
-        return sleep(2000).then(fetchElmAnalyseState)
+      log(`Error fetching elm analyse state ${err}`);
+      return sleep(2000).then(fetchElmAnalyseState);
     });
 }
 
