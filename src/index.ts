@@ -190,53 +190,47 @@ async function fetchElmAnalyseState() {
     });
 }
 
+function publishDiagnostics(messages, uri) {
+  // Filter messages to the currently open file
+  let currentMessages = (messages || []).filter(m => uri.endsWith(m.file));
+  let diagnostics: Diagnostic[] = currentMessages.map(message => {
+    let [lineStart, colStart, lineEnd, colEnd] = message.data.properties.range;
+    let diagnostic: Diagnostic = {
+      severity: DiagnosticSeverity.Warning,
+      range: {
+        start: { line: lineStart - 1, character: colStart - 1 },
+        end: { line: lineEnd - 1, character: colEnd - 1 }
+      },
+      // Clean up the error message a bit, removing the end of the line
+      // Record has only one field. Use the field's type or introduce a Type. At ((14,5),(14,20))  )
+      message: message.data.description.split(/at .+$/i)[0],
+      source: "elm-analyse-vim"
+    };
+    if (hasDiagnosticRelatedInformationCapability) {
+      diagnostic.relatedInformation = [
+        {
+          location: {
+            uri: uri,
+            range: Object.assign({}, diagnostic.range)
+          },
+          message: message.type
+        }
+      ];
+    }
+    return diagnostic;
+  });
+  log(`Sending diagnostics ${JSON.stringify(diagnostics)}`);
+
+  // Send the computed diagnostics to VSCode.
+  connection.sendDiagnostics({ uri: uri, diagnostics });
+}
+
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.
   let settings = await getDocumentSettings(textDocument.uri);
 
   fetchElmAnalyseState()
-    .then(body => {
-      let messages = body.messages;
-      let diagnostics: Diagnostic[] = [];
-      log(`Messages before filtering ${messages.length}`);
-      let currentMessages = (messages || []).filter(m =>
-        textDocument.uri.endsWith(m.file)
-      );
-      log(`Messages after filtering ${currentMessages.length}`);
-      diagnostics = currentMessages.map(message => {
-        let [
-          lineStart,
-          colStart,
-          lineEnd,
-          colEnd
-        ] = message.data.properties.range;
-        let diagnostic: Diagnostic = {
-          severity: DiagnosticSeverity.Warning,
-          range: {
-            start: { line: lineStart - 1, character: colStart - 1 },
-            end: { line: lineEnd - 1, character: colEnd - 1 }
-          },
-          message: message.data.description,
-          source: "ex"
-        };
-        if (hasDiagnosticRelatedInformationCapability) {
-          diagnostic.relatedInformation = [
-            {
-              location: {
-                uri: textDocument.uri,
-                range: Object.assign({}, diagnostic.range)
-              },
-              message: message.type
-            }
-          ];
-        }
-        return diagnostic;
-      });
-      log(`Sending diagnostics ${JSON.stringify(diagnostics)}`);
-
-      // Send the computed diagnostics to VSCode.
-      connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-    })
+    .then(body => publishDiagnostics(body.messages, textDocument.uri))
     .catch(err => log(`Uh oh, errored ${err}`));
 }
 

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node src/index.ts --stdio",
     "build": "tsc",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "postinstall": "tsc"
   },
   "bin": {
     "elm-analyse-vim": "dist/index.js"
