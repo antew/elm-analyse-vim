@@ -3,11 +3,23 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index.ts --stdio",
+    "build": "tsc",
+    "dev": "nodemon"
+  },
   "bin": {
-    "elm-analyse-vim": "./index.js"
+    "elm-analyse-vim": "dist/index.js"
   },
   "dependencies": {
     "elm-analyse": "^0.16.1",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "vscode-languageserver": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.18",
+    "nodemon": "^1.18.9",
+    "ts-node": "^8.0.1",
+    "typescript": "^3.2.4"
   }
 }
